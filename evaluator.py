@@ -3,41 +3,41 @@ from classes import *
 class ParseError(Exception):
     pass 
 
-def find_next_lambda(token_list: list[Token]):
-    while peek(token_list) != TokenTypes.LAMBDA:
-        advance(token_list)
+def find_next_lambda(tokens: TokenList):
+    while tokens.peek() != TokenTypes.LAMBDA:
+        tokens.advance()
 
-def parse_arguments(token_list: list[Token]):
+def parse_arguments(tokens: TokenList):
     args = []
     
-    while peek(token_list) == TokenTypes.ARGUMENT:
-        arg_name = consume(token_list).value
+    while tokens.peek() == TokenTypes.ARGUMENT:
+        arg_name = tokens.consume().value
         if arg_name == None: raise ParseError("Unnamed argument somewhere!!! oopsie!!")
         args += [arg_name]
     
     return tuple(args)
 
-def parse_expression(token_list: list[Token]):
+def parse_expression(tokens: TokenList):
     expression_tokens = []
     
-    while peek(token_list) not in [TokenTypes.LAMBDA, TokenTypes.ARGUMENT, None]:
-        expression_tokens += [consume(token_list)]
+    while tokens.peek() not in [TokenTypes.LAMBDA, TokenTypes.ARGUMENT, None]:
+        expression_tokens += [tokens.consume()]
     
     return Expression(expression_tokens)
 
-def parse_lambda(token_list: list[Token]):
-    arguments = parse_arguments(token_list)
-    expression = parse_expression(token_list)
+def parse_lambda(tokens: TokenList):
+    arguments = parse_arguments(tokens)
+    expression = parse_expression(tokens)
 
     return Lambda(arguments, expression)
 
-def parse_tokens(token_list: list[Token]):
+def parse_tokens(tokens: TokenList):
     parsed_lambdas = []
     
-    while len(token_list) > 0:
-        find_next_lambda(token_list) # Remove all leading non-LAMBDA tokens
-        consume(token_list)          # Remove leading LAMBDA token
-        parsed_lambdas += [parse_lambda(token_list)]
+    while len(tokens) > 0:
+        find_next_lambda(tokens) # Remove all leading non-LAMBDA tokens
+        tokens.consume()         # Remove leading LAMBDA token
+        parsed_lambdas += [parse_lambda(tokens)]
     
     return parsed_lambdas
 
@@ -52,7 +52,7 @@ PLUS
 VARIABLE y
 """ # the above should be equal to `lambda x, y: x * x + y`
 
-token_list = []
+tokens = TokenList([])
 
 for line in token_string.splitlines()[1:]:
     token_def = line.split()
@@ -62,6 +62,6 @@ for line in token_string.splitlines()[1:]:
     else:
         value = None
     
-    token_list += [Token(TokenTypes[token_def[0]], value)]
+    tokens.token_list += [Token(TokenTypes[token_def[0]], value)]
 
-print(parse_tokens(token_list))
+print(parse_tokens(tokens))

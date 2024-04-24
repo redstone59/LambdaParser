@@ -9,7 +9,7 @@ TokenTypes = Enum("TokenTypes", [
                    "PLUS", "MINUS", "STAR", "SLASH", "PERCENT",      # Operators
                    "EQUAL", "NOT_EQUAL",                             # Equality
                    "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", # Comparisons
-                   "VARIABLE", "LITERAL",                            # Number types
+                   "VARIABLE", "LITERAL", "BOOLEAN",                 # Number types
                    "LAMBDA", "ARGUMENT",                             # Defining lambdas
                    "IF", "ELSE",                                     # Conditionals
                    "AND", "OR", "NOT"                                # Logical operators
@@ -24,17 +24,28 @@ class Token:
     def __repr__(self):
         return f"Token({self.type.name}, {self.value})"
 
-def advance(token_list: list[Token]):
-    if len(token_list) == 0: return
-    token_list.pop(0)
+@dataclass
+class TokenList:
+    token_list: list[Token]
+    index: int = 0
 
-def consume(token_list: list[Token]):
-    if len(token_list) == 0: return None
-    return token_list.pop(0)
+    def advance(self):
+        if len(self.token_list) == 0: return
+        self.token_list.pop(0)
 
-def peek(token_list: list[Token]):
-    if len(token_list) == 0: return None
-    return token_list[0].type
+    def check(self, *token_types: TokenTypes):
+        return self.peek(self.token_list) in token_types
 
-def match(token_list: list[Token], token_type: TokenTypes):
-    return peek(token_list) == token_type
+    def consume(self):
+        if len(self.token_list) == 0: return None
+        return self.token_list.pop(0)
+
+    def peek(self):
+        if len(self.token_list) == 0: return None
+        return self.token_list[0].type
+
+    def match(self, *token_types: TokenTypes):
+        return self.consume(self.token_list) in token_types
+    
+    def __len__(self):
+        return len(self.token_list)

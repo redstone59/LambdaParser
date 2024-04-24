@@ -3,6 +3,19 @@ from tokens import *
 class EvaluationError(Exception):
     pass
 
+"""
+expression -> equality
+equality -> comparison ( (EQUAL | NOT_EQUAL) comparison )*
+comparison -> term ( (GREATER | GREATER_EQUAL | LESS_EQUAL | LESS) term )*
+term -> factor ( (PLUS | MINUS) factor )*
+factor -> unary ( (STAR | SLASH) unary )*
+unary -> ( NOT | MINUS ) unary
+unary -> primary
+primary -> number | BOOLEAN | LEFT_PAREN expession RIGHT_PAREN
+
+number -> LITERAL | VARIABLE
+"""
+
 @dataclass
 class Expression:
     tokens: list[Token]
