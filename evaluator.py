@@ -1,4 +1,4 @@
-from classes import *
+from interpreter import *
 
 class ParseError(Exception):
     pass 

@@ -12,7 +12,8 @@ TokenTypes = Enum("TokenTypes", [
                    "VARIABLE", "LITERAL", "BOOLEAN",                 # Number types
                    "LAMBDA", "ARGUMENT",                             # Defining lambdas
                    "IF", "ELSE",                                     # Conditionals
-                   "AND", "OR", "NOT"                                # Logical operators
+                   "AND", "OR", "NOT",                               # Logical operators
+                   "COMMA",                                          # Calling
                  ]
                 )
 
