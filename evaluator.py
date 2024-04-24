@@ -3,21 +3,13 @@ from classes import *
 class ParseError(Exception):
     pass 
 
-def advance(token_list: list[Token]):
-    token_list.pop(0)
-
-def consume(token_list: list[Token]):
-    return token_list.pop(0)
-
 def find_next_lambda(token_list: list[Token]):
     while peek(token_list) != TokenTypes.LAMBDA:
         advance(token_list)
 
-def peek(token_list: list[Token]):
-    return token_list[0].type
-
 def parse_arguments(token_list: list[Token]):
     args = []
+    
     while peek(token_list) == TokenTypes.ARGUMENT:
         arg_name = consume(token_list).value
         if arg_name == None: raise ParseError("Unnamed argument somewhere!!! oopsie!!")
@@ -27,7 +19,8 @@ def parse_arguments(token_list: list[Token]):
 
 def parse_expression(token_list: list[Token]):
     expression_tokens = []
-    while peek(token_list) not in [TokenTypes.LAMBDA, TokenTypes.ARGUMENT]:
+    
+    while peek(token_list) not in [TokenTypes.LAMBDA, TokenTypes.ARGUMENT, None]:
         expression_tokens += [consume(token_list)]
     
     return Expression(expression_tokens)
@@ -39,11 +32,14 @@ def parse_lambda(token_list: list[Token]):
     return Lambda(arguments, expression)
 
 def parse_tokens(token_list: list[Token]):
-    while len(token_list) > 0:
-        find_next_lambda(token_list)
-        parse_lambda(token_list)
+    parsed_lambdas = []
     
-    print("Completed parsing") 
+    while len(token_list) > 0:
+        find_next_lambda(token_list) # Remove all leading non-LAMBDA tokens
+        consume(token_list)          # Remove leading LAMBDA token
+        parsed_lambdas += [parse_lambda(token_list)]
+    
+    return parsed_lambdas
 
 token_string = """
 LAMBDA
@@ -68,4 +64,4 @@ for line in token_string.splitlines()[1:]:
     
     token_list += [Token(TokenTypes[token_def[0]], value)]
 
-parse_tokens(token_list)
+print(parse_tokens(token_list))

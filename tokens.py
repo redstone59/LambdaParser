@@ -19,7 +19,22 @@ TokenTypes = Enum("TokenTypes", [
 @dataclass
 class Token:
     type: TokenTypes
-    value: int | bool | None = None
+    value: int | bool | str | None = None
 
     def __repr__(self):
         return f"Token({self.type.name}, {self.value})"
+
+def advance(token_list: list[Token]):
+    if len(token_list) == 0: return
+    token_list.pop(0)
+
+def consume(token_list: list[Token]):
+    if len(token_list) == 0: return None
+    return token_list.pop(0)
+
+def peek(token_list: list[Token]):
+    if len(token_list) == 0: return None
+    return token_list[0].type
+
+def match(token_list: list[Token], token_type: TokenTypes):
+    return peek(token_list) == token_type
