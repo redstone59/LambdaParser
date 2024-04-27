@@ -1,13 +1,10 @@
 from interpreter import *
 
-class ParseError(Exception):
-    pass 
-
-def find_next_lambda(tokens: TokenList):
+def find_next_lambda(tokens: Parser):
     while tokens.peek() != TokenTypes.LAMBDA:
         tokens.advance()
 
-def parse_arguments(tokens: TokenList):
+def parse_arguments(tokens: Parser):
     args = []
     
     while tokens.peek() == TokenTypes.ARGUMENT:
@@ -17,7 +14,7 @@ def parse_arguments(tokens: TokenList):
     
     return tuple(args)
 
-def parse_expression(tokens: TokenList):
+def parse_expression(tokens: Parser):
     expression_tokens = []
     
     while tokens.peek() not in [TokenTypes.LAMBDA, TokenTypes.ARGUMENT, None]:
@@ -25,13 +22,13 @@ def parse_expression(tokens: TokenList):
     
     return Expression(expression_tokens)
 
-def parse_lambda(tokens: TokenList):
+def parse_lambda(tokens: Parser):
     arguments = parse_arguments(tokens)
     expression = parse_expression(tokens)
 
     return Lambda(arguments, expression)
 
-def parse_tokens(tokens: TokenList):
+def parse_tokens(tokens: Parser):
     parsed_lambdas = []
     
     while len(tokens) > 0:
@@ -52,7 +49,7 @@ PLUS
 VARIABLE y
 """ # the above should be equal to `lambda x, y: x * x + y`
 
-tokens = TokenList([])
+tokens = Parser([])
 
 for line in token_string.splitlines()[1:]:
     token_def = line.split()

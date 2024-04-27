@@ -1,33 +1,76 @@
-from expressions import *
+from lambda_parser import *
 
 class EvaluationError(Exception):
     pass
 
+@dataclass
+class Interpreter(ExpressionVisitor):
+    def evaluate(self, expression: Expression):
+        return expression.accept(self)
+    
+    def check_for_var(self, expression):
+        # If a variable with no value is passed in, parsing it will return an Expression
+        return type(expression) == Variable
+    
+    def visit_binary(self, binary: Binary):
+        left = binary.left.accept(self)
+        right = binary.right.accept(self)
+        
+        if self.check_for_var(left) or self.check_for_var(right):
+            return Binary(left, binary.operator, right)
+        
+        match binary.operator.type:
+            # Arithmetic operations
+            case TokenTypes.PLUS:
+                return Literal(left + right)
+            case TokenTypes.MINUS:
+                return Literal(left - right)
+            case TokenTypes.STAR:
+                return Literal(left * right)
+            case TokenTypes.SLASH:
+                return Literal(left / right)
+            case TokenTypes.PERCENT:
+                return Literal(left % right)
+            # Comparisons
+            case TokenTypes.GREATER:
+                return Literal(left > right)
+            case TokenTypes.GREATER_EQUAL:
+                return Literal(left >= right)
+            case TokenTypes.LESS_EQUAL:
+                return Literal(left <= right)
+            case TokenTypes.LESS:
+                return Literal(left < right)
+            # Equality
+            case TokenTypes.EQUAL:
+                return Literal(left == right)
+            case TokenTypes.NOT_EQUAL:
+                return Literal(left != right)
+    
+    def visit_grouping(self, grouping: Grouping):
+        return grouping.expression.accept(self)
+    
+    def visit_literal(self, literal: Literal):
+        return literal.value
+    
+    def visit_variable(self, variable: Variable):
+        if variable.value == None: return variable
+        return variable.value
+    
+    def visit_unary(self, unary: Unary):
+        right = unary.right.accept(self)
+        
+        if self.check_for_var(right):
+            return unary
+        
+        match unary.operator.type:
+            case TokenTypes.NOT:
+                # Everything but a literal with value False is truthy.
+                return Literal(type(right) == bool and right == False)
+            case TokenTypes.MINUS:
+                return Literal(-right)
+
+
 """
-    lambda -> LAMBDA (ARGUMENT)* expression
-expression -> equality
-  equality -> comparison ( (EQUAL | NOT_EQUAL) comparison )*
-comparison -> term ( (GREATER | GREATER_EQUAL | LESS_EQUAL | LESS) term )*
-      term -> factor ( (PLUS | MINUS) factor )*
-    factor -> unary ( (STAR | SLASH) unary )*
-     unary -> ( NOT | MINUS ) unary
-     unary -> primary
-      call -> primary ( LEFT_PAREN arguments? RIGHT_PAREN )*
-   primary -> number | BOOLEAN | LEFT_PAREN expession RIGHT_PAREN
-
-arguments -> ( expression )?
-    number -> LITERAL | VARIABLE
-
-lambda x: 2 * lambda: x + 5
-LAMBDA ARGUMENT x LAMBDA VARIABLE x PLUS LITERAL 5 STAR LITERAL 2
-                         +-----------------------+ term (NUMBER PLUS NUMBER)
-                  +------------------------------+ lambda (LAMBDA term)
-                  +---------------------------------------------+ factor (NUMBER PLUS lambda)
-+---------------------------------------------------------------+ lambda (LAMBDA ARGUMENT factor)
-
-
-"""
-
 @dataclass
 class Interpreter:
     tokens: list[Token]
@@ -54,12 +97,4 @@ class Interpreter:
                 substituted_tokens[index] = replace_token
         
         return substituted_tokens
-
-@dataclass
-class Lambda:
-    args: list[str]
-    expression: Expression
-
-    def evaluate(self, *vars):
-        arg_to_var_dict = dict(zip(self.args, vars))
-        return self.expression.evaluate_with_args(arg_to_var_dict)
+        """
